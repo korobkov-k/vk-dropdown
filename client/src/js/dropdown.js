@@ -1,4 +1,15 @@
 (function (window) {
+    /**
+     * @constructs Dropdown
+     * @param {Object} config - initialization config
+     * @param {Boolean} [config.multiselect=false]
+     * @param {Boolean} [config.showAvatar=false]
+     * @param {Number} [config.itemHeight=50]
+     * @param {Number} [config.itemsBuffer=10]
+     * @param {Number} [config.pictureUrl]
+     * @param {Element} config.element
+     * @param {Object[]} [config.items]
+     */
     function Dropdown(config) {
         this.multiselect = config.multiselect || false;
         this.showAvatar  = config.showAvatar || false;
@@ -62,7 +73,7 @@
 
     Dropdown.prototype.itemElementFabric = function (item, withPicture, pictureURL) {
         var template =
-            (withPicture ? '<img class="dd-item-picture" src="$AVATAR"' : '') +
+            (withPicture ? '<img class="dd-item-picture" src="$AVATAR">' : '') +
             '<div class="dd-item-name">$NAME</div>' +
             '<div class="dd-item-info">$INFO</div>';
         if (withPicture) {

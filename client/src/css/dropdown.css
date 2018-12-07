@@ -45,3 +45,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+.dd-item-picture {
+    vertical-align: top;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    float: left;
+    margin-right: 12px;
+}
