@@ -1,0 +1,32 @@
+{
+  "name": "vk-dropdown",
+  "version": "0.0.1",
+  "description": "Dropdown for VK.com",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/korobkov-k/vk-dropdown.git"
+  },
+  "keywords": [
+    "dropdown"
+  ],
+  "author": "Konstantin Korobkov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/korobkov-k/vk-dropdown/issues"
+  },
+  "homepage": "https://github.com/korobkov-k/vk-dropdown#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-sequence": "^1.0.0",
+    "gulp-uglify": "^3.0.1"
+  }
+}
