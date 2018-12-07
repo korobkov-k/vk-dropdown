@@ -1,0 +1,47 @@
+.dd-items-container {
+    position: relative;
+}
+.dd-menu {
+    position: absolute;
+    width: 300px;
+    height: 400px;
+    overflow: auto;
+    border-left: 1px solid #e7e8ec;
+    border-right: 1px solid #e7e8ec;
+    border-bottom: 1px solid #e7e8ec;
+}
+
+.dd-menu-item {
+    cursor: pointer;
+    display: block;
+    background: #fff;
+    border-top: 1px solid #e7e8ec;
+    width: 100%;
+    overflow: hidden;
+    padding: 8px 12px;
+    font-size: 12px;
+    box-sizing: border-box;
+    line-height: 15px;
+}
+
+.dd-menu-item .dd-menu-item-focus {
+    background: #f0f2f5;
+}
+
+.dd-item-name {
+    color: #42648b;
+    font-weight: 700;
+}
+
+.dd-item-info {
+    padding-top: 4px;
+    line-height: 14px;
+    color: #656565;
+}
+
+.dd-item-name, .dd-item-info {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

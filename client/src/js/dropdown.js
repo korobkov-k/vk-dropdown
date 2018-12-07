@@ -1,12 +1,12 @@
-(function () {
+(function (window) {
     function Dropdown(config) {
         this.multiselect = config.multiselect || false;
         this.showAvatar  = config.showAvatar || false;
-        this.itemHeight = config.itemHeight || 20;
+        this.itemHeight = config.itemHeight || 50;
         this.itemsBuffer = config.itemsBuffer || 10;
         this.pictureUrl = config.pictureUrl || "";
         if (config.element) {
-            init(config.element)
+            init.call(this, config.element);
         } else {
             throw "Error initializing dropdown. Property 'element' must contain target element reference."
         }
@@ -51,6 +51,7 @@
         for(var i = firstVisibleItemIndex; i<=lastVisibleItemIndex; i++) {
             var newItem = this.itemElementFabric(this.filteredItems[i], this.showAvatar, this.pictureUrl);
             newItem.style.top = (i * this.itemHeight) + 'px';
+            newItem.style.height = this.itemHeight + 'px';
             newItem.style.position = 'absolute';
             newElements.appendChild(newItem);
         }
@@ -60,11 +61,10 @@
     };
 
     Dropdown.prototype.itemElementFabric = function (item, withPicture, pictureURL) {
-        var template = '<div class="dd-menu-item">' +
+        var template =
             (withPicture ? '<img class="dd-item-picture" src="$AVATAR"' : '') +
-            '<span class="dd-item-name">$NAME</span>' +
-            '<span class="dd-item-info">$INFO</span>' +
-            '</div>';
+            '<div class="dd-item-name">$NAME</div>' +
+            '<div class="dd-item-info">$INFO</div>';
         if (withPicture) {
             if (!pictureURL) {
                 console.error('Error while creating row. Param \'withPicture\' was provided. ' +
@@ -73,36 +73,37 @@
             template = template.replace('$AVATAR', pictureURL + (item.avatar || 'placeholder'));
         }
         template = template.replace('$NAME', item.name + ' ' + item.surname);
-        template = template.replace('$SURNAME', item.info);
+        template = template.replace('$INFO', item.info);
 
         var el = document.createElement('div');
-        el.outerHTML = template;
+        el.className = 'dd-menu-item';
+        el.innerHTML = template;
         return el;
     };
 
     var init = function (element) {
         this.elements        = {};
-        this.elements.button = createDiv(
-            '<div class="dd-toggle">' +
+        var button = createDiv(
             '<div class="dd-tokens"></div>' +
             '<button class="dd-token-add"></button>' +
-            '<input type="text" class="dd-input" />' +
-            '</div>'
+            '<input type="text" class="dd-input" />'
+            , 'dd-button'
         );
-        this.elements.menu   = createDiv(
-            '<div class="dd-menu">' +
-            '<div class="dd-items-container"></div>' +
-            '</div>'
+        var menu   = createDiv(
+            '<div class="dd-items-container"></div>'
+            , 'dd-menu'
         );
-        element.appendChild(this.elements.buttons);
-        element.appendChild(this.elements.menu);
+        element.innerHTML = "";
+        this.elements.button = element.appendChild(button);
+        this.elements.menu = element.appendChild(menu);
     };
 
-    var createDiv = function (template) {
-        var el       = document.createElement('div');
-        el.outerHTML = template || "";
-        return el;
+    var createDiv = function (template, className) {
+        var div       = document.createElement('div');
+        div.innerHTML = template || "";
+        div.className = className || "";
+        return div;
     };
 
     window.VKDropdown = Dropdown;
-})();
+})(window);
