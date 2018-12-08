@@ -1,3 +1,13 @@
+.dd-menu {
+    font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+.dd-button {
+    font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
 .dd-items-container {
     position: relative;
 }
@@ -19,7 +29,7 @@
     width: 100%;
     overflow: hidden;
     padding: 8px 12px;
-    font-size: 12px;
+    font-size: 12.5px;
     box-sizing: border-box;
     line-height: 15px;
 }

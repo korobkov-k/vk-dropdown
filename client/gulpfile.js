@@ -27,11 +27,11 @@ gulp.task('buildCSS', function() {
 });
 
 gulp.task('copyJsToServer', function() {
-    return gulp.src('dist/dropdown-bundle.min.js')
+    return gulp.src('dist/dropdown-bundle.js')
         .pipe(gulp.dest('../server/public/javascripts'))
 });
 gulp.task('copyCssToServer', function() {
-    return gulp.src('dist/dropdown.min.css')
+    return gulp.src('dist/dropdown.css')
         .pipe(gulp.dest('../server/public/stylesheets'))
 });
 

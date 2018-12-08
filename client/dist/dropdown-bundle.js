@@ -55,8 +55,10 @@
         var itemsContainer = this.elements.menu.querySelector('.dd-items-container');
         var scrollTop = this.elements.menu.scrollTop;
         var menuHeight = this.elements.menu.offsetHeight;
-        var firstVisibleItemIndex = scrollTop/this.itemHeight;
-        var lastVisibleItemIndex = scrollTop/this.itemHeight + menuHeight/this.itemHeight;
+        var firstVisibleItemIndex = Math.ceil(scrollTop/this.itemHeight);
+        var lastVisibleItemIndex = Math.round(scrollTop/this.itemHeight + menuHeight/this.itemHeight);
+
+        this.lastRenderScrollTop = scrollTop;
 
         itemsContainer.style.height = scrollHeight + 'px';
 
@@ -65,7 +67,7 @@
 
         var newElements = document.createDocumentFragment();
         for(var i = firstVisibleItemIndex; i<=lastVisibleItemIndex; i++) {
-            var newItem = this.itemElementFabric(this.filteredItems[i], this.showAvatar, this.pictureUrl);
+            var newItem = this.itemElementFactory(this.filteredItems[i], this.showAvatar, this.pictureUrl);
             newItem.style.top = (i * this.itemHeight) + 'px';
             newItem.style.height = this.itemHeight + 'px';
             newItem.style.position = 'absolute';
@@ -76,7 +78,7 @@
         itemsContainer.appendChild(newElements);
     };
 
-    Dropdown.prototype.itemElementFabric = function (item, withPicture, pictureURL) {
+    Dropdown.prototype.itemElementFactory = function (item, withPicture, pictureURL) {
         var template =
             (withPicture ? '<img class="dd-item-picture" src="$AVATAR">' : '') +
             '<div class="dd-item-name">$NAME</div>' +
@@ -112,6 +114,8 @@
         element.innerHTML = "";
         this.elements.button = element.appendChild(button);
         this.elements.menu = element.appendChild(menu);
+
+        addEventListeners.call(this);
     };
 
     var createDiv = function (template, className) {
@@ -119,6 +123,16 @@
         div.innerHTML = template || "";
         div.className = className || "";
         return div;
+    };
+
+    var addEventListeners = function() {
+        var _this = this;
+       this.elements.menu.addEventListener('scroll', function () {
+           var scrollTop = _this.elements.menu.scrollTop;
+           if (Math.abs(scrollTop - _this.lastRenderScrollTop) > _this.itemHeight * Math.max(0, _this.itemsBuffer - 1)) {
+               _this.renderMenu();
+           }
+       })
     };
 
     window.VKDropdown = Dropdown;
