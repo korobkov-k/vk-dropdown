@@ -38,7 +38,7 @@ gulp.task('copyCssToServer', function() {
 gulp.task('watch',function(){
     gulp.watch(['src/js/*.js', "src/css/*.css"], function (event) {
         gulpSequence(['buildJS', 'buildCSS'], ['copyJsToServer','copyCssToServer'])(function (err) {
-            if (err) console.log(err)
+            if (err) console.L(err)
         })
     });
 });

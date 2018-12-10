@@ -4,6 +4,10 @@
         );
 })();
 (function (window) {
+    var logOn = true;
+    var L     = logOn ? console.log : function (message) {
+    };
+
     /**
      * @constructs Dropdown
      * @param {Object} config - initialization config
@@ -51,6 +55,7 @@
     };
 
     Dropdown.prototype.renderMenu = function () {
+        L('render');
         var scrollHeight          = this.filteredItems.length * this.itemHeight;
         var itemsContainer        = this.elements.menu.querySelector('.dd-items-container');
         var scrollTop             = this.elements.menu.scrollTop;
@@ -65,9 +70,16 @@
         firstVisibleItemIndex = Math.max(0, firstVisibleItemIndex - this.itemsBuffer);
         lastVisibleItemIndex  = Math.min(this.filteredItems.length - 1, lastVisibleItemIndex + this.itemsBuffer);
 
+        if (firstVisibleItemIndex === 0) {
+            lastVisibleItemIndex += this.itemsBuffer;
+        }
+        if (lastVisibleItemIndex === this.filteredItems.length - 1) {
+            firstVisibleItemIndex = Math.max(0, firstVisibleItemIndex - this.itemsBuffer);
+        }
+
         var newElements = document.createDocumentFragment();
         for (var i = firstVisibleItemIndex; i <= lastVisibleItemIndex; i++) {
-            var newItem            = this.itemElementFactory(this.filteredItems[i], this.showAvatar, this.pictureUrl);
+            var newItem            = this.itemElementFactory(this.filteredItems[i], i, this.showAvatar, this.pictureUrl);
             newItem.style.top      = (i * this.itemHeight) + 'px';
             newItem.style.height   = this.itemHeight + 'px';
             newItem.style.position = 'absolute';
@@ -78,7 +90,7 @@
         itemsContainer.appendChild(newElements);
     };
 
-    Dropdown.prototype.itemElementFactory = function (item, withPicture, pictureURL) {
+    Dropdown.prototype.itemElementFactory = function (item, index, withPicture, pictureURL) {
         var template =
                 (withPicture ? '<img class="dd-item-picture" src="$AVATAR">' : '') +
                 '<div class="dd-item-name">$NAME</div>' +
@@ -95,15 +107,16 @@
 
         var el       = document.createElement('div');
         el.className = 'dd-menu-item';
+        el.setAttribute('data-index', index);
         el.innerHTML = template;
         return el;
     };
 
-    Dropdown.prototype.updateState = function(newStatePartial) {
+    Dropdown.prototype.updateState = function (newStatePartial) {
         for (var key in newStatePartial) {
             switch (key) {
                 case 'open':
-                    if (this.state.open !== newStatePartial[key]){
+                    if (this.state.open !== newStatePartial[key]) {
                         this.state.open = newStatePartial[key];
                         updateMenuVisibility.call(this);
                     }
@@ -114,12 +127,40 @@
         }
     };
 
+    Dropdown.prototype.scrollTo = function (_position) {
+        var position   = parseInt(_position);
+        var menuHeight = this.elements.menu.offsetHeight;
+        if (position < 0) position = 0;
+        if (position > menuHeight) position = menuHeight;
+        this.elements.menu.scrollTop = position;
+    };
+
+    Dropdown.prototype.setFocusedItem = function (item) {
+        if (item && item.className && item.className.indexOf('dd-menu-item-focus') > -1) {
+            // Skip focusing on element, that is already focused.
+            return;
+        }
+        L('setFocus');
+        if (this.focusedItem) {
+            this.focusedItem.className = this.focusedItem.className.replace('dd-menu-item-focus', '');
+        }
+        if (typeof item === "number") {
+            this.focusedItem = this.elements.menu.querySelector('.dd-menu-item[data-index="' + item + '"]');
+        } else if (typeof item === "object") {
+            this.focusedItem = item;
+        } else {
+            console.error('Wrong usage of function "setFocusedItem". Parameter should be item html node or item index')
+        }
+        this.focusedItem.className += ' dd-menu-item-focus';
+    };
+
     var init = function (element) {
         this.elements        = {};
         var button           = createDiv(
             '<div class="dd-tokens"></div>' +
             '<button class="dd-token-add"></button>' +
-            '<input type="text" class="dd-input" />'
+            '<input type="text" class="dd-input" />' +
+            '<div class="dd-arrow"></div>'
             , 'dd-button'
         );
         var menu             = createDiv(
@@ -146,23 +187,58 @@
 
     var addEventListeners = function () {
         var _this = this;
+        var input = this.elements.button.querySelector('.dd-input');
+        var arrow = this.elements.button.querySelector('.dd-arrow');
         this.elements.menu.addEventListener('scroll', function () {
             var scrollTop = _this.elements.menu.scrollTop;
             if (Math.abs(scrollTop - _this.lastRenderScrollTop) > _this.itemHeight * Math.max(0, _this.itemsBuffer - 1)) {
                 _this.renderMenu();
             }
         });
-        this.elements.button.querySelector('.dd-input').addEventListener('focus', function () {
-            _this.updateState({open:true});
+        input.addEventListener('focus', function () {
+            L('focus');
+            _this.updateState({open: true});
         });
-        this.elements.button.querySelector('.dd-input').addEventListener('blur', function () {
-            _this.updateState({open:false});
+        input.addEventListener('blur', function () {
+            L('blur');
+            _this.updateState({open: false});
         });
+        arrow.addEventListener('click', function () {
+            L('click');
+            if (!_this.state.open) {
+                input.focus();
+            } else {
+                input.blur();
+            }
+        });
+        this.elements.button.addEventListener('mousedown', function (event) {
+            L('mousedown');
+            if (event.target.nodeName !== "INPUT") {
+                event.preventDefault();
+            }
+        });
+        this.elements.button.addEventListener('click', function (event) {
+            if (event.target === _this.elements.button) {
+                input.focus();
+            }
+        });
+        this.elements.menu.addEventListener('mouseover', function (event) {
+            if (event.target.className.indexOf('dd-menu-item') > -1 ) {
+                _this.setFocusedItem(event.target);
+            } else if (event.target.parentNode.className.indexOf('dd-menu-item')  > -1) {
+                _this.setFocusedItem(event.target.parentNode);
+            }
+        })
     };
 
-    var updateMenuVisibility = function() {
+    var updateMenuVisibility = function () {
         if (this.state.open) {
             this.elements.menu.style.display = 'block';
+            this.scrollTo(0);
+            var _this = this;
+            setTimeout(function () {
+                _this.setFocusedItem(0);
+            });
         } else {
             this.elements.menu.style.display = 'none';
         }
