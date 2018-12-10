@@ -13,9 +13,9 @@
     function Dropdown(config) {
         this.multiselect = config.multiselect || false;
         this.showAvatar  = config.showAvatar || false;
-        this.itemHeight = config.itemHeight || 50;
+        this.itemHeight  = config.itemHeight || 50;
         this.itemsBuffer = config.itemsBuffer || 10;
-        this.pictureUrl = config.pictureUrl || "";
+        this.pictureUrl  = config.pictureUrl || "";
         if (config.element) {
             init.call(this, config.element);
         } else {
@@ -26,7 +26,7 @@
         }
     }
 
-    Dropdown.prototype.update = function(items) {
+    Dropdown.prototype.update = function (items) {
         this.items = items;
         this.runFilter();
         this.render();
@@ -41,30 +41,30 @@
         this.filteredItems = this.items; //TODO
     };
 
-    Dropdown.prototype.renderButton = function() {
+    Dropdown.prototype.renderButton = function () {
         //TODO
     };
 
-    Dropdown.prototype.renderMenu = function() {
-        var scrollHeight = this.filteredItems.length * this.itemHeight;
-        var itemsContainer = this.elements.menu.querySelector('.dd-items-container');
-        var scrollTop = this.elements.menu.scrollTop;
-        var menuHeight = this.elements.menu.offsetHeight;
-        var firstVisibleItemIndex = Math.ceil(scrollTop/this.itemHeight);
-        var lastVisibleItemIndex = Math.round(scrollTop/this.itemHeight + menuHeight/this.itemHeight);
+    Dropdown.prototype.renderMenu = function () {
+        var scrollHeight          = this.filteredItems.length * this.itemHeight;
+        var itemsContainer        = this.elements.menu.querySelector('.dd-items-container');
+        var scrollTop             = this.elements.menu.scrollTop;
+        var menuHeight            = this.elements.menu.offsetHeight;
+        var firstVisibleItemIndex = Math.ceil(scrollTop / this.itemHeight);
+        var lastVisibleItemIndex  = Math.round(scrollTop / this.itemHeight + menuHeight / this.itemHeight);
 
         this.lastRenderScrollTop = scrollTop;
 
         itemsContainer.style.height = scrollHeight + 'px';
 
         firstVisibleItemIndex = Math.max(0, firstVisibleItemIndex - this.itemsBuffer);
-        lastVisibleItemIndex = Math.min(this.filteredItems.length - 1, lastVisibleItemIndex + this.itemsBuffer);
+        lastVisibleItemIndex  = Math.min(this.filteredItems.length - 1, lastVisibleItemIndex + this.itemsBuffer);
 
         var newElements = document.createDocumentFragment();
-        for(var i = firstVisibleItemIndex; i<=lastVisibleItemIndex; i++) {
-            var newItem = this.itemElementFactory(this.filteredItems[i], this.showAvatar, this.pictureUrl);
-            newItem.style.top = (i * this.itemHeight) + 'px';
-            newItem.style.height = this.itemHeight + 'px';
+        for (var i = firstVisibleItemIndex; i <= lastVisibleItemIndex; i++) {
+            var newItem            = this.itemElementFactory(this.filteredItems[i], this.showAvatar, this.pictureUrl);
+            newItem.style.top      = (i * this.itemHeight) + 'px';
+            newItem.style.height   = this.itemHeight + 'px';
             newItem.style.position = 'absolute';
             newElements.appendChild(newItem);
         }
@@ -75,9 +75,9 @@
 
     Dropdown.prototype.itemElementFactory = function (item, withPicture, pictureURL) {
         var template =
-            (withPicture ? '<img class="dd-item-picture" src="$AVATAR">' : '') +
-            '<div class="dd-item-name">$NAME</div>' +
-            '<div class="dd-item-info">$INFO</div>';
+                (withPicture ? '<img class="dd-item-picture" src="$AVATAR">' : '') +
+                '<div class="dd-item-name">$NAME</div>' +
+                '<div class="dd-item-info">$INFO</div>';
         if (withPicture) {
             if (!pictureURL) {
                 console.error('Error while creating row. Param \'withPicture\' was provided. ' +
@@ -88,27 +88,46 @@
         template = template.replace('$NAME', item.name + ' ' + item.surname);
         template = template.replace('$INFO', item.info);
 
-        var el = document.createElement('div');
+        var el       = document.createElement('div');
         el.className = 'dd-menu-item';
         el.innerHTML = template;
         return el;
     };
 
+    Dropdown.prototype.updateState = function(newStatePartial) {
+        for (var key in newStatePartial) {
+            switch (key) {
+                case 'open':
+                    if (this.state.open !== newStatePartial[key]){
+                        this.state.open = newStatePartial[key];
+                        updateMenuVisibility.call(this);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
     var init = function (element) {
         this.elements        = {};
-        var button = createDiv(
+        var button           = createDiv(
             '<div class="dd-tokens"></div>' +
             '<button class="dd-token-add"></button>' +
             '<input type="text" class="dd-input" />'
             , 'dd-button'
         );
-        var menu   = createDiv(
+        var menu             = createDiv(
             '<div class="dd-items-container"></div>'
             , 'dd-menu'
         );
-        element.innerHTML = "";
+        element.innerHTML    = "";
         this.elements.button = element.appendChild(button);
-        this.elements.menu = element.appendChild(menu);
+        this.elements.menu   = element.appendChild(menu);
+
+        this.state = {
+            open: false
+        };
 
         addEventListeners.call(this);
     };
@@ -120,14 +139,28 @@
         return div;
     };
 
-    var addEventListeners = function() {
+    var addEventListeners = function () {
         var _this = this;
-       this.elements.menu.addEventListener('scroll', function () {
-           var scrollTop = _this.elements.menu.scrollTop;
-           if (Math.abs(scrollTop - _this.lastRenderScrollTop) > _this.itemHeight * Math.max(0, _this.itemsBuffer - 1)) {
-               _this.renderMenu();
-           }
-       })
+        this.elements.menu.addEventListener('scroll', function () {
+            var scrollTop = _this.elements.menu.scrollTop;
+            if (Math.abs(scrollTop - _this.lastRenderScrollTop) > _this.itemHeight * Math.max(0, _this.itemsBuffer - 1)) {
+                _this.renderMenu();
+            }
+        });
+        this.elements.button.querySelector('.dd-input').addEventListener('focus', function () {
+            _this.updateState({open:true});
+        });
+        this.elements.button.querySelector('.dd-input').addEventListener('blur', function () {
+            _this.updateState({open:false});
+        });
+    };
+
+    var updateMenuVisibility = function() {
+        if (this.state.open) {
+            this.elements.menu.style.display = 'block';
+        } else {
+            this.elements.menu.style.display = 'none';
+        }
     };
 
     window.VKDropdown = Dropdown;

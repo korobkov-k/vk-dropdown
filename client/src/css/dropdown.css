@@ -1,17 +1,40 @@
-.dd-menu {
+.dd-menu, .dd-button {
     font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
     -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .dd-button {
-    font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
-    -webkit-font-smoothing: subpixel-antialiased;
+    width: 300px;
+    min-height: 30px;
+    background: #fff;
+    border: 1px solid #d3d9de;
+    border-radius: 2px;
+    padding: 2px 2px 1px;
+    position: relative;
+    box-sizing: border-box;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.dd-token-add {
+    display: none;
+}
+
+.dd-input {
+    height: 14px;
+    padding: 4px 6px 7px;
+    outline: 0;
+    margin: 0;
+    border: 0;
+    width: 340px;
 }
 
 .dd-items-container {
     position: relative;
 }
 .dd-menu {
+    margin-top: -1px;
+    z-index: 1;
     position: absolute;
     width: 300px;
     height: 400px;
@@ -19,6 +42,16 @@
     border-left: 1px solid #e7e8ec;
     border-right: 1px solid #e7e8ec;
     border-bottom: 1px solid #e7e8ec;
+    box-sizing: border-box;
+    display: none;
+}
+
+.dd-arrow {
+    width: 21px;
+    height: 25px;
+    overflow: hidden;
+    cursor: pointer;
+    background: url(/images/dropdown_arrow.png) no-repeat 2px 50%;
 }
 
 .dd-menu-item {
