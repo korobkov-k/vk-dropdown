@@ -145,6 +145,8 @@
             this.focusedItem.className = this.focusedItem.className.replace('dd-menu-item-focus', '');
         }
         if (typeof item === "number") {
+            if (item < 0) item = 0;
+            if (item > this.filteredItems.length-1) item = this.filteredItems.length-1;
             this.focusedItem = this.elements.menu.querySelector('.dd-menu-item[data-index="' + item + '"]');
         } else if (typeof item === "object") {
             this.focusedItem = item;
@@ -152,6 +154,20 @@
             console.error('Wrong usage of function "setFocusedItem". Parameter should be item html node or item index')
         }
         this.focusedItem.className += ' dd-menu-item-focus';
+    };
+
+    Dropdown.prototype.scrollToCurrentItem = function () {
+        var scrollTop             = this.elements.menu.scrollTop;
+        var menuHeight            = this.elements.menu.offsetHeight;
+        var firstVisibleItemIndex = Math.round(scrollTop / this.itemHeight);
+        var lastVisibleItemIndex  = Math.ceil(scrollTop / this.itemHeight + menuHeight / this.itemHeight);
+        var currentIndex = parseInt(this.focusedItem.getAttribute('data-index'));
+        if (currentIndex <= firstVisibleItemIndex) {
+            this.elements.menu.scrollTop = currentIndex * this.itemHeight;
+        }
+        if (currentIndex >= lastVisibleItemIndex) {
+            this.elements.menu.scrollTop = (currentIndex+1) * this.itemHeight - menuHeight;
+        }
     };
 
     var init = function (element) {
@@ -232,6 +248,22 @@
                 _this.setFocusedItem(event.target);
             } else if (event.target.parentNode.className.indexOf('dd-menu-item')  > -1) {
                 _this.setFocusedItem(event.target.parentNode);
+            }
+        });
+        this.elements.button.addEventListener('keydown', function (event) {
+            if (event.keyCode === 38) {
+                //up
+                _this.setFocusedItem(parseInt(_this.focusedItem.getAttribute('data-index'))-1);
+                _this.scrollToCurrentItem();
+            }
+            if (event.keyCode === 40) {
+                //down
+                _this.setFocusedItem(parseInt(_this.focusedItem.getAttribute('data-index'))+1);
+                _this.scrollToCurrentItem();
+            }
+            if (event.keyCode === 13) {
+                //enter
+                _this.selectAndClose(_this.focusedItem);
             }
         })
     };
