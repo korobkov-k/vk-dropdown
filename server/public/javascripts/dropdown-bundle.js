@@ -197,6 +197,7 @@
         });
         input.addEventListener('focus', function () {
             L('focus');
+            _this.focusTimeStamp = new Date();
             _this.updateState({open: true});
         });
         input.addEventListener('blur', function () {
@@ -208,6 +209,10 @@
             if (!_this.state.open) {
                 input.focus();
             } else {
+                if (new Date() - _this.focusTimeStamp < 120) {
+                    // Prevent flickering, when user click on arrow and browser window is not in focus.
+                    return;
+                }
                 input.blur();
             }
         });
