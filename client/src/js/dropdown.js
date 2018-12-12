@@ -6,20 +6,29 @@
     /**
      * @constructs Dropdown
      * @param {Object} config - initialization config
+     *
+     * @param {Element} config.element
      * @param {Boolean} [config.multiselect=false]
      * @param {Boolean} [config.showAvatar=false]
      * @param {Number} [config.itemHeight=50]
      * @param {Number} [config.itemsBuffer=10]
      * @param {Number} [config.pictureUrl]
-     * @param {Element} config.element
      * @param {Object[]} [config.items]
+     * @param {Function} [config.keyFunction]
+     * @param {Function} [config.displayFunction]
+     * @param {Function} [config.placeholder]
      */
     function Dropdown(config) {
-        this.multiselect = config.multiselect || false;
-        this.showAvatar  = config.showAvatar || false;
-        this.itemHeight  = config.itemHeight || 50;
-        this.itemsBuffer = config.itemsBuffer || 10;
-        this.pictureUrl  = config.pictureUrl || "";
+        this.multiselect     = config.multiselect || false;
+        this.showAvatar      = config.showAvatar || false;
+        this.itemHeight      = config.itemHeight || 50;
+        this.itemsBuffer     = config.itemsBuffer || 10;
+        this.pictureUrl      = config.pictureUrl || "";
+        this.keyFunction     = config.keyFunction || defaultKeyFunction;
+        this.displayFunction = config.displayFunction || defaultDisplayFunction;
+        this.placeholder     = config.placeholder || "Введите часть имени или домена";
+
+        this.selectedItems = {};
         if (config.element) {
             init.call(this, config.element);
         } else {
@@ -42,15 +51,50 @@
     };
 
     Dropdown.prototype.runFilter = function () {
-        this.filteredItems = this.items; //TODO
+        var _this = this;
+        this.filteredItems = this.items.filter(function (item) {
+            return _this.selectedItems[_this.keyFunction(item)] === undefined;
+        });
     };
 
     Dropdown.prototype.renderButton = function () {
-        //TODO
+        L('render button');
+        var newTokens          = document.createDocumentFragment();
+        for (var key in this.selectedItems) {
+            newTokens.appendChild(this.tokenFactory(this.selectedItems[key], key))
+        }
+
+        var oldTokens = this.elements.button.querySelectorAll('.dd-token');
+        if (oldTokens && oldTokens.length > 0) {
+            Array.prototype.forEach.call( oldTokens, function( node ) {
+                node.parentNode.removeChild( node );
+            });
+        }
+
+        this.elements.button.insertBefore(newTokens, this.elements.button.childNodes[0]);
+        var hasSelectedItems = Object.getOwnPropertyNames(this.selectedItems).length > 0;
+        if (this.multiselect) {
+            if (this.elements.button.className.indexOf('dd-multiselect') === -1) {
+                this.elements.button.className += ' dd-multiselect'
+            }
+        } else {
+            if (this.elements.button.className.indexOf('dd-multiselect') > -1) {
+                this.elements.button.className = this.elements.button.className.replace(' dd-multiselect', '')
+            }
+        }
+        if (hasSelectedItems) {
+            if (this.elements.button.className.indexOf('dd-with-selection') === -1) {
+                this.elements.button.className += ' dd-with-selection'
+            }
+        } else {
+            if (this.elements.button.className.indexOf('dd-with-selection') > -1) {
+                this.elements.button.className = this.elements.button.className.replace(' dd-with-selection', '')
+            }
+        }
     };
 
     Dropdown.prototype.renderMenu = function () {
-        L('render');
+        L('render menu');
         var scrollHeight          = this.filteredItems.length * this.itemHeight;
         var itemsContainer        = this.elements.menu.querySelector('.dd-items-container');
         var scrollTop             = this.elements.menu.scrollTop;
@@ -107,6 +151,14 @@
         return el;
     };
 
+    Dropdown.prototype.tokenFactory = function (item, key) {
+        var el       = document.createElement('div');
+        el.className = 'dd-token';
+        el.setAttribute('data-key', key);
+        el.innerHTML = this.displayFunction(item) + '<div class="dd-token-remove-icon"></div>';
+        return el;
+    };
+
     Dropdown.prototype.updateState = function (newStatePartial) {
         for (var key in newStatePartial) {
             switch (key) {
@@ -114,6 +166,7 @@
                     if (this.state.open !== newStatePartial[key]) {
                         this.state.open = newStatePartial[key];
                         updateMenuVisibility.call(this);
+                        updateButtonClass.call(this);
                     }
                     break;
                 default:
@@ -141,7 +194,7 @@
         }
         if (typeof item === "number") {
             if (item < 0) item = 0;
-            if (item > this.filteredItems.length-1) item = this.filteredItems.length-1;
+            if (item > this.filteredItems.length - 1) item = this.filteredItems.length - 1;
             this.focusedItem = this.elements.menu.querySelector('.dd-menu-item[data-index="' + item + '"]');
         } else if (typeof item === "object") {
             this.focusedItem = item;
@@ -156,20 +209,27 @@
         var menuHeight            = this.elements.menu.offsetHeight;
         var firstVisibleItemIndex = Math.round(scrollTop / this.itemHeight);
         var lastVisibleItemIndex  = Math.ceil(scrollTop / this.itemHeight + menuHeight / this.itemHeight);
-        var currentIndex = parseInt(this.focusedItem.getAttribute('data-index'));
+        var currentIndex          = parseInt(this.focusedItem.getAttribute('data-index'));
         if (currentIndex <= firstVisibleItemIndex) {
             this.elements.menu.scrollTop = currentIndex * this.itemHeight;
         }
         if (currentIndex >= lastVisibleItemIndex) {
-            this.elements.menu.scrollTop = (currentIndex+1) * this.itemHeight - menuHeight;
+            this.elements.menu.scrollTop = (currentIndex + 1) * this.itemHeight - menuHeight;
         }
+    };
+
+    Dropdown.prototype.selectAndClose = function () {
+        var index                                                       = parseInt(this.focusedItem.getAttribute('data-index'));
+        this.selectedItems[this.keyFunction(this.filteredItems[index])] = this.filteredItems[index];
+        this.filteredItems.splice(index, 1);
+        this.elements.button.querySelector('.dd-input').blur();
+        this.renderButton();
     };
 
     var init = function (element) {
         this.elements        = {};
         var button           = createDiv(
-            '<div class="dd-tokens"></div>' +
-            '<button class="dd-token-add"></button>' +
+            '<div class="dd-token-add">Добавить<div class="dd-token-add-icon"></div></div>' +
             '<input type="text" class="dd-input" />' +
             '<div class="dd-arrow"></div>'
             , 'dd-button'
@@ -200,6 +260,7 @@
         var _this = this;
         var input = this.elements.button.querySelector('.dd-input');
         var arrow = this.elements.button.querySelector('.dd-arrow');
+        var addButton = this.elements.button.querySelector('.dd-token-add');
         this.elements.menu.addEventListener('scroll', function () {
             var scrollTop = _this.elements.menu.scrollTop;
             if (Math.abs(scrollTop - _this.lastRenderScrollTop) > _this.itemHeight * Math.max(0, _this.itemsBuffer - 1)) {
@@ -234,26 +295,37 @@
             }
         });
         this.elements.button.addEventListener('click', function (event) {
-            if (event.target === _this.elements.button) {
+            if (event.target === _this.elements.button || event.target === addButton) {
                 input.focus();
             }
         });
         this.elements.menu.addEventListener('mouseover', function (event) {
-            if (event.target.className.indexOf('dd-menu-item') > -1 ) {
+            if (event.target.className.indexOf('dd-menu-item') > -1) {
                 _this.setFocusedItem(event.target);
-            } else if (event.target.parentNode.className.indexOf('dd-menu-item')  > -1) {
+            } else if (event.target.parentNode.className.indexOf('dd-menu-item') > -1) {
                 _this.setFocusedItem(event.target.parentNode);
             }
+        });
+        this.elements.menu.addEventListener('mousedown', function (event) {
+            event.preventDefault();
+        });
+        this.elements.menu.addEventListener('click', function (event) {
+            if (event.target.className.indexOf('dd-menu-item') > -1) {
+                _this.setFocusedItem(event.target);
+            } else if (event.target.parentNode.className.indexOf('dd-menu-item') > -1) {
+                _this.setFocusedItem(event.target.parentNode);
+            }
+            _this.selectAndClose(_this.focusedItem);
         });
         this.elements.button.addEventListener('keydown', function (event) {
             if (event.keyCode === 38) {
                 //up
-                _this.setFocusedItem(parseInt(_this.focusedItem.getAttribute('data-index'))-1);
+                _this.setFocusedItem(parseInt(_this.focusedItem.getAttribute('data-index')) - 1);
                 _this.scrollToCurrentItem();
             }
             if (event.keyCode === 40) {
                 //down
-                _this.setFocusedItem(parseInt(_this.focusedItem.getAttribute('data-index'))+1);
+                _this.setFocusedItem(parseInt(_this.focusedItem.getAttribute('data-index')) + 1);
                 _this.scrollToCurrentItem();
             }
             if (event.keyCode === 13) {
@@ -265,15 +337,41 @@
 
     var updateMenuVisibility = function () {
         if (this.state.open) {
-            this.elements.menu.style.display = 'block';
+            this.runFilter();
             this.scrollTo(0);
+            this.renderMenu();
+            if (this.elements.menu.className.indexOf('dd-opened') === -1) {
+                this.elements.menu.className += ' dd-opened';
+            }
             var _this = this;
             setTimeout(function () {
                 _this.setFocusedItem(0);
             });
         } else {
-            this.elements.menu.style.display = 'none';
+            if (this.elements.menu.className.indexOf('dd-opened') > -1) {
+                this.elements.menu.className = this.elements.menu.className.replace(' dd-opened', '');
+            }
         }
+    };
+
+    var updateButtonClass = function () {
+        if (this.state.open) {
+            if (this.elements.button.className.indexOf('dd-opened') === -1) {
+                this.elements.button.className += ' dd-opened';
+            }
+        } else {
+            if (this.elements.button.className.indexOf('dd-opened') > -1) {
+                this.elements.button.className = this.elements.button.className.replace(' dd-opened', '');
+            }
+        }
+    };
+
+    var defaultKeyFunction = function (item) {
+        return item._id;
+    };
+
+    var defaultDisplayFunction = function (item) {
+        return item.name + ' ' + item.surname;
     };
 
     window.VKDropdown = Dropdown;
