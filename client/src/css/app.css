@@ -1,0 +1,16 @@
+.logger {
+    width: calc(100% - 560px);
+    height: 370px;
+    overflow: auto;
+    font-family: Consolas, sans-serif;
+    color: #333;
+    background: #fafafa55;
+    border: 1px solid #f5f5f5;
+    position: fixed;
+    top: 20px;
+    left: 500px;
+}
+
+.logger p {
+    padding: 10px;
+}

@@ -20,6 +20,7 @@
      * @param {Function} [config.remoteDataSource]
      * @param {number} [config.pageSize]
      * @param {string} [config.notFoundMessage]
+     * @param {Function} [config.onSelect]
      */
     function Dropdown(config) {
         this.multiselect      = config.multiselect !== undefined ? config.multiselect : true;
@@ -33,6 +34,7 @@
         this.remoteDataSource = config.remoteDataSource || window.VKSearch.searchRemote;
         this.pageSize         = config.pageSize || 500;
         this.notFoundMessage  = config.notFoundMessage || "Пользователь не найден";
+        this.onSelect         = config.onSelect || null;
 
         this.selectedItems = {};
         if (config.element) {
@@ -256,11 +258,18 @@
     };
 
     Dropdown.prototype.selectAndClose = function () {
+        if (!this.multiselect) this.selectedItems = {};
         var index                                                       = parseInt(this.focusedItem.getAttribute('data-index'));
         this.selectedItems[this.keyFunction(this.filteredItems[index])] = this.filteredItems[index];
         this.filteredItems.splice(index, 1);
         this.elements.button.querySelector('.dd-input').blur();
         this.renderButton();
+        if (this.onSelect) this.onSelect();
+    };
+
+    Dropdown.prototype.value = function () {
+        if (this.multiselect) return Object.values(this.selectedItems);
+        return Object.values(this.selectedItems)[0];
     };
 
     var init = function (element) {
@@ -765,10 +774,16 @@
 
 (function (VKDropdown) {
     var onload = function () {
+        var logger = document.getElementsByClassName('logger')[0];
         var dd = new VKDropdown({
             element: document.getElementsByClassName('vk-dropdown')[0],
             showAvatar: true,
-            pictureUrl: '/images/avatars/'
+            pictureUrl: '/images/avatars/',
+            onSelect: function () {
+                var log = document.createElement('p');
+                log.innerText = "Dropdown 'Default' selection changed: " + JSON.stringify(dd.value()).split(',').join(', ');
+                logger.insertBefore(log, logger.childNodes[0]);
+            }
         });
         var users = JSON.parse(localStorage.getItem('users'));
         dd.update(users);
@@ -777,14 +792,24 @@
             element: document.getElementsByClassName('vk-dropdown-single')[0],
             showAvatar: true,
             multiselect: false,
-            pictureUrl: '/images/avatars/'
+            pictureUrl: '/images/avatars/',
+            onSelect: function () {
+                var log = document.createElement('p');
+                log.innerText = "Dropdown 'Single' selection changed: " + JSON.stringify(dd2.value()).split(',').join(', ');
+                logger.insertBefore(log, logger.childNodes[0]);
+            }
         });
         dd2.update(users);
 
         var dd3 = new VKDropdown({
             element: document.getElementsByClassName('vk-dropdown-single-no-avatar')[0],
             showAvatar: false,
-            multiselect: false
+            multiselect: false,
+            onSelect: function () {
+                var log = document.createElement('p');
+                log.innerText = "Dropdown 'Single, No avatar' selection changed: " + JSON.stringify(dd3.value()).split(',').join(', ');
+                logger.insertBefore(log, logger.childNodes[0]);
+            }
         });
         dd3.update(users);
 
@@ -796,7 +821,14 @@
                 element: div,
                 showAvatar: true,
                 multiple: false,
-                pictureUrl: '/images/avatars/'
+                pictureUrl: '/images/avatars/',
+                onSelect: (function (c) {
+                    return function () {
+                        var log = document.createElement('p');
+                        log.innerText = "Dropdown 'Additional dropdown " + c + "' selection changed: " + JSON.stringify(dd_a.value()).split(',').join(', ');
+                        logger.insertBefore(log, logger.childNodes[0]);
+                    }
+                })(counter)
             });
             dd_a.update(users);
 

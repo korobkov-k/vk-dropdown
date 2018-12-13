@@ -20,6 +20,7 @@
      * @param {Function} [config.remoteDataSource]
      * @param {number} [config.pageSize]
      * @param {string} [config.notFoundMessage]
+     * @param {Function} [config.onSelect]
      */
     function Dropdown(config) {
         this.multiselect      = config.multiselect !== undefined ? config.multiselect : true;
@@ -33,6 +34,7 @@
         this.remoteDataSource = config.remoteDataSource || window.VKSearch.searchRemote;
         this.pageSize         = config.pageSize || 500;
         this.notFoundMessage  = config.notFoundMessage || "Пользователь не найден";
+        this.onSelect         = config.onSelect || null;
 
         this.selectedItems = {};
         if (config.element) {
@@ -256,11 +258,18 @@
     };
 
     Dropdown.prototype.selectAndClose = function () {
+        if (!this.multiselect) this.selectedItems = {};
         var index                                                       = parseInt(this.focusedItem.getAttribute('data-index'));
         this.selectedItems[this.keyFunction(this.filteredItems[index])] = this.filteredItems[index];
         this.filteredItems.splice(index, 1);
         this.elements.button.querySelector('.dd-input').blur();
         this.renderButton();
+        if (this.onSelect) this.onSelect();
+    };
+
+    Dropdown.prototype.value = function () {
+        if (this.multiselect) return Object.values(this.selectedItems);
+        return Object.values(this.selectedItems)[0];
     };
 
     var init = function (element) {
