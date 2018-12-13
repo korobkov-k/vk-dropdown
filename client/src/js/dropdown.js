@@ -63,6 +63,7 @@
         var filteredItems;
         _this.totalCount = null;
         _this.serverSearchPerformed = false;
+        _this.updateState({notFound: false});
         if (this.filterText && this.filterText.length > 0) {
             filteredItems = window.VKSearch.searchLocal(this.filterText, this.items)
         } else {
