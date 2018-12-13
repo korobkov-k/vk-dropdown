@@ -4,7 +4,7 @@
 
 ## Демо
 
-здесь будет ссылка
+https://vk-dropdown-demo.herokuapp.com/
 
 ## Структура проекта
 
