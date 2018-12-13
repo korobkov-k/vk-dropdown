@@ -81,6 +81,7 @@
                     _this.updateState({notFound: false});
                 }
                 _this.renderMenu();
+                _this.setFocusedItem(0);
             })
         }
     };
@@ -226,7 +227,9 @@
         } else {
             console.error('Wrong usage of function "setFocusedItem". Parameter should be item html node or item index')
         }
-        updateClass(this.focusedItem, 'dd-menu-item-focus', true);
+        if (this.focusedItem) {
+            updateClass(this.focusedItem, 'dd-menu-item-focus', true);
+        }
     };
 
     Dropdown.prototype.scrollToCurrentItem = function () {
@@ -371,6 +374,9 @@
                 _this.setFocusedItem(event.target);
             } else if (event.target.parentNode.className.indexOf('dd-menu-item') > -1) {
                 _this.setFocusedItem(event.target.parentNode);
+            } else {
+                input.blur();
+                return;
             }
             _this.selectAndClose(_this.focusedItem);
         });
@@ -383,9 +389,7 @@
             this.scrollTo(0);
             this.renderMenu();
             var _this = this;
-            setTimeout(function () {
-                _this.setFocusedItem(0);
-            });
+            _this.setFocusedItem(0);
         }
         updateClass(this.elements.menu, 'dd-opened', this.state.open)
     };
@@ -413,6 +417,8 @@
         this.runFilter();
         this.scrollTo(0);
         this.renderMenu();
+        var _this = this;
+        _this.setFocusedItem(0);
     };
 
     var merge = function (array1, array2, keyFunction) {
