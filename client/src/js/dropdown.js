@@ -59,6 +59,8 @@
     Dropdown.prototype.runFilter = function () {
         var _this = this;
         var filteredItems;
+        _this.totalCount = null;
+        _this.serverSearchPerformed = false;
         if (this.filterText && this.filterText.length > 0) {
             filteredItems = window.VKSearch.searchLocal(this.filterText, this.items)
         } else {
@@ -72,6 +74,8 @@
         if (this.filterText && filteredItems.length < (this.elements.menu.offsetHeight / this.itemHeight + this.itemsBuffer)) {
             this.updateState({loading: true});
             this.remoteDataSource({search: this.filterText, offset: 0, count: this.pageSize}).then(function (response) {
+                _this.serverSearchPerformed = true;
+                _this.totalCount = response.totalCount;
                 _this.updateState({loading: false});
                 _this.items         = merge(_this.items, response.data, _this.keyFunction);
                 _this.filteredItems = merge(_this.filteredItems, response.data, _this.keyFunction);
@@ -140,6 +144,10 @@
 
         itemsContainer.innerHTML = "";
         itemsContainer.appendChild(newElements);
+
+        if (lastVisibleItemIndex === this.filteredItems.length - 1) {
+            tryInfiniteScroll.call(this)
+        }
     };
 
     Dropdown.prototype.itemElementFactory = function (item, index, withPicture, pictureURL) {
@@ -441,6 +449,32 @@
         }
         if (element.className.indexOf(className) > -1 && !shouldPresent) {
             element.className = element.className.replace(' ' + className, '');
+        }
+    };
+
+    var tryInfiniteScroll = function() {
+        L('try infinite scroll');
+        var _this = this;
+        if (this.state.loading) return;
+        if (!this.serverSearchPerformed) {
+            _this.updateState({loading: true});
+            this.remoteDataSource({search: this.filterText || null, offset: 0, count: this.filteredItems.length}).then(function (response) {
+                _this.updateState({loading: false});
+                _this.items         = merge(_this.items, response.data, _this.keyFunction);
+                _this.filteredItems = merge(_this.filteredItems, response.data, _this.keyFunction);
+                _this.renderMenu();
+                _this.serverSearchPerformed = true;
+            });
+            return;
+        }
+        if (this.totalCount === null || this.totalCount === undefined || this.totalCount > this.filteredItems.length) {
+            _this.updateState({loading: true});
+            this.remoteDataSource({search: this.filterText || null, offset: this.filteredItems.length, count: this.pageSize}).then(function (response) {
+                _this.updateState({loading: false});
+                _this.filteredItems = _this.filteredItems.concat(response.data);
+                _this.totalCount = response.totalCount;
+                _this.renderMenu();
+            })
         }
     };
 

@@ -38,7 +38,7 @@ function search(query, offset, count) {
         offset             : offset,
         count              : count,
         searchExecutionTime: process.hrtime(hrstart)[1]/1000000 + "ms",
-        data               : result.slice(offset, count)
+        data               : result.slice(offset, offset+count)
     }
 
 }

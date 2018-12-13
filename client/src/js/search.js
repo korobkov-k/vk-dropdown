@@ -50,7 +50,7 @@
             var str = [],
                 p;
             for (p in obj) {
-                if (obj.hasOwnProperty(p)) {
+                if (obj.hasOwnProperty(p) && obj[p] !== null && obj[p] !== undefined) {
                     var k = prefix ? prefix + "[" + p + "]" : p,
                         v = obj[p];
                     str.push((v !== null && typeof v === "object") ?
