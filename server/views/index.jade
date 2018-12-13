@@ -3,5 +3,12 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  div.vk-dropdown vk-dropdown placeholder
+  h2 Default
+  div.vk-dropdown
+  h2 Single
+  div.vk-dropdown-single
+  h2 Single, No avatar
+  div.vk-dropdown-single-no-avatar
+  hr
+  button.add-dropdown Добавить выпадающий список
   script(src="/javascripts/dropdown-bundle.js")

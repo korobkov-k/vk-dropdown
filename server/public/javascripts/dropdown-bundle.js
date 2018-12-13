@@ -8,8 +8,8 @@
      * @param {Object} config - initialization config
      *
      * @param {Element} config.element
-     * @param {Boolean} [config.multiselect=false]
-     * @param {Boolean} [config.showAvatar=false]
+     * @param {Boolean} [config.multiselect=true]
+     * @param {Boolean} [config.showAvatar=true]
      * @param {Number} [config.itemHeight=50]
      * @param {Number} [config.itemsBuffer=10]
      * @param {Number} [config.pictureUrl]
@@ -22,8 +22,8 @@
      * @param {string} [config.notFoundMessage]
      */
     function Dropdown(config) {
-        this.multiselect      = config.multiselect || false;
-        this.showAvatar       = config.showAvatar || false;
+        this.multiselect      = config.multiselect !== undefined ? config.multiselect : true;
+        this.showAvatar       = config.showAvatar !== undefined ? config.showAvatar : true;
         this.itemHeight       = config.itemHeight || 50;
         this.itemsBuffer      = config.itemsBuffer || 10;
         this.pictureUrl       = config.pictureUrl || "";
@@ -106,7 +106,8 @@
 
         this.elements.button.insertBefore(newTokens, this.elements.button.childNodes[0]);
         var hasSelectedItems = Object.getOwnPropertyNames(this.selectedItems).length > 0;
-        updateClass(this.elements.button, 'dd-multiselect', this.multiselect);
+
+        updateClass(this.elements.button, 'dd-single-select', !this.multiselect);
         updateClass(this.elements.button, 'dd-with-selection', hasSelectedItems);
     };
 
@@ -771,6 +772,40 @@
         });
         var users = JSON.parse(localStorage.getItem('users'));
         dd.update(users);
+
+        var dd2 = new VKDropdown({
+            element: document.getElementsByClassName('vk-dropdown-single')[0],
+            showAvatar: true,
+            multiselect: false,
+            pictureUrl: '/images/avatars/'
+        });
+        dd2.update(users);
+
+        var dd3 = new VKDropdown({
+            element: document.getElementsByClassName('vk-dropdown-single-no-avatar')[0],
+            showAvatar: false,
+            multiselect: false
+        });
+        dd3.update(users);
+
+        var counter = 1;
+        document.getElementsByClassName('add-dropdown')[0].addEventListener('click', function () {
+            var div = document.createElement('div');
+            div.className = 'additional-dd';
+            var dd_a = new VKDropdown({
+                element: div,
+                showAvatar: true,
+                multiple: false,
+                pictureUrl: '/images/avatars/'
+            });
+            dd_a.update(users);
+
+            var h2 = document.createElement('h2');
+            h2.innerText = "Additional dropdown " + counter++;
+
+            document.querySelector('body').appendChild(h2);
+            document.querySelector('body').appendChild(div);
+        })
     };
     document.addEventListener('DOMContentLoaded', onload, false);
 
