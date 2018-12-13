@@ -32,7 +32,7 @@
         this.displayFunction  = config.displayFunction || defaultDisplayFunction;
         this.placeholder      = config.placeholder || "Введите часть имени или домена";
         this.remoteDataSource = config.remoteDataSource || window.VKSearch.searchRemote;
-        this.pageSize         = config.pageSize || 500;
+        this.pageSize         = config.pageSize || 200;
         this.notFoundMessage  = config.notFoundMessage || "Пользователь не найден";
         this.onSelect         = config.onSelect || null;
 
