@@ -133,7 +133,7 @@
     z-index: 1;
     position: absolute;
     width: 300px;
-    height: 400px;
+    max-height: 400px;
     overflow: auto;
     border-left: 1px solid #e7e8ec;
     border-right: 1px solid #e7e8ec;
@@ -189,10 +189,76 @@
     margin-right: 12px;
 }
 
+.dd-items-not-found, .dd-items-loading {
+    display: none;
+    height: 50px;
+    position: relative;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 15px;
+    font-size: 12.5px;
+    box-sizing: border-box;
+    background: #fafbfc;
+}
+
+.dd-items-loading {
+    align-items: center;
+}
+
 /* Manage menu states */
 
 .dd-menu.dd-opened {
     display: block;
 }
 
+.dd-menu.dd-not-found.dd-loading .dd-items-not-found {
+    display: none;
+}
+
+.dd-menu.dd-not-found .dd-items-not-found {
+    display: flex;
+}
+
+.dd-menu.dd-loading .dd-items-loading {
+    display: flex;
+}
+
 /* ^^^ MENU (list) styles END                                                                                         */
+
+/*Loading spinner*/
+
+.dd-spinner {
+    display: inline-block;
+    position: relative;
+    width: 30px;
+    height: 13px;
+}
+.dd-spinner div {
+    display: inline-block;
+    position: absolute;
+    left: 3px;
+    width: 7px;
+    height: 13px;
+    background: #42648b;
+    animation: dd-spinner 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+}
+.dd-spinner div:nth-child(1) {
+    left: 3px;
+    animation-delay: -0.24s;
+}
+.dd-spinner div:nth-child(2) {
+    left: 13px;
+    animation-delay: -0.12s;
+}
+.dd-spinner div:nth-child(3) {
+    left: 23px;
+    animation-delay: 0;
+}
+@keyframes dd-spinner {
+    0% {
+        transform: scaleY(1.5);
+    }
+    50%, 100% {
+        transform: none;
+    }
+}
