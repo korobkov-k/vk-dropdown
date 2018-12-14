@@ -1,7 +1,4 @@
 (function (window) {
-    var logOn = true;
-    var L     = logOn ? console.log : function (message) {
-    };
 
     /**
      * @constructs Dropdown
@@ -94,7 +91,6 @@
     };
 
     Dropdown.prototype.renderButton = function () {
-        L('render button');
         var newTokens = document.createDocumentFragment();
         for (var key in this.selectedItems) {
             newTokens.appendChild(this.tokenFactory(this.selectedItems[key], key))
@@ -115,7 +111,6 @@
     };
 
     Dropdown.prototype.renderMenu = function () {
-        L('render menu');
         var scrollHeight          = this.filteredItems.length * this.itemHeight;
         var itemsContainer        = this.elements.menu.querySelector('.dd-items-container');
         var scrollTop             = this.elements.menu.scrollTop;
@@ -226,7 +221,6 @@
             // Skip focusing on element, that is already focused.
             return;
         }
-        L('setFocus');
         if (this.focusedItem) {
             updateClass(this.focusedItem, 'dd-menu-item-focus', false);
         }
@@ -277,7 +271,7 @@
         this.elements        = {};
         var button           = createDiv(
             '<div class="dd-token-add">Добавить<div class="dd-token-add-icon"></div></div>' +
-            '<input type="text" class="dd-input" />' +
+            '<input type="text" class="dd-input" placeholder="' + this.placeholder + '"/>' +
             '<div class="dd-arrow"></div>'
             , 'dd-button'
         );
@@ -313,19 +307,16 @@
 
         // --- Button events start
         input.addEventListener('focus', function () {
-            L('focus');
             _this.focusTimeStamp = new Date();
             _this.updateState({open: true});
         });
         input.addEventListener('blur', function () {
-            L('blur');
             _this.updateState({open: false});
         });
         input.addEventListener('input', function () {
             onInputChanged.call(_this, input.value);
         });
         arrow.addEventListener('click', function () {
-            L('click');
             if (!_this.state.open) {
                 input.focus();
             } else {
@@ -337,7 +328,6 @@
             }
         });
         this.elements.button.addEventListener('mousedown', function (event) {
-            L('mousedown');
             if (event.target.nodeName !== "INPUT") {
                 event.preventDefault();
             }
@@ -464,7 +454,6 @@
     };
 
     var tryInfiniteScroll = function() {
-        L('try infinite scroll');
         var _this = this;
         if (this.state.loading) return;
         if (!this.serverSearchPerformed) {
