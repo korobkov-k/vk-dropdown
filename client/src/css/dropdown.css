@@ -161,6 +161,7 @@
     border-left: 1px solid #e7e8ec;
     border-right: 1px solid #e7e8ec;
     border-bottom: 1px solid #e7e8ec;
+    background: white;
     box-sizing: border-box;
     display: none;
 }
