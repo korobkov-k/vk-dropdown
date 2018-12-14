@@ -98,11 +98,16 @@
 .dd-input {
     height: 20px;
     margin-top: 2px;
-    padding: 4px 6px 7px;
+    padding: 0 4px 4px 2px;
     outline: 0;
     border: 0;
     width: calc(100% - 30px);
     box-sizing: border-box;
+    font-size: 14px;
+}
+
+.dd-input::-ms-clear {
+    display: none;
 }
 
 .dd-arrow {
@@ -152,7 +157,7 @@
 
 .dd-with-selection .dd-input:focus {
     position: relative;
-    bottom: initial;
+    bottom: 0;
 }
 
 .dd-opened .dd-token-add {
@@ -177,6 +182,7 @@
     border-left: 1px solid #e7e8ec;
     border-right: 1px solid #e7e8ec;
     border-bottom: 1px solid #e7e8ec;
+    background: white;
     box-sizing: border-box;
     display: none;
 }
